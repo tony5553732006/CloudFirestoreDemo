@@ -32,7 +32,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:text="Id；"
+                    android:text="Id："
                     android:textColor="@android:color/black"
                     android:textSize="16dp" />
 
@@ -58,7 +58,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:text="姓名；"
+                    android:text="姓名："
                     android:textColor="@android:color/black"
                     android:textSize="16dp" />
 
@@ -84,7 +84,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:text="年齡；"
+                    android:text="年齡："
                     android:textColor="@android:color/black"
                     android:textSize="16dp" />
 
@@ -111,7 +111,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:text="性別；"
+                    android:text="性別："
                     android:textColor="@android:color/black"
                     android:textSize="16dp" />
 
@@ -137,7 +137,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginRight="8dp"
-                    android:text="地址；"
+                    android:text="地址："
                     android:textColor="@android:color/black"
                     android:textSize="16dp" />
 

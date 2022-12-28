@@ -16,14 +16,21 @@ import com.example.test.activity.EditUserActivity;
 import com.example.test.adapter.UserListAdapter;
 import com.example.test.vo.User;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FieldValue;
+import com.google.firebase.firestore.Filter;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.SetOptions;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Firebase Cloud FireStore Demo
@@ -47,6 +54,7 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.activity_cloud_fire_store_demo);
 
         mFireStore = FirebaseFirestore.getInstance();
+
         mUserList = new ArrayList<>();
 
         mAddUserBtn = findViewById(R.id.addUserBtn);
@@ -62,9 +70,11 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
 
             @Override
             public void onEditBtnClicked(User user) {
-                Intent intent = new Intent(CloudFireStoreDemo.this, EditUserActivity.class);
-                intent.putExtra(EditUserActivity.EXTRA_NAME_USER, user);
-                startActivityForResult(intent, REQUEST_CODE_EDIT_USER);
+//                //編輯頁
+//                Intent intent = new Intent(CloudFireStoreDemo.this, EditUserActivity.class);
+//                intent.putExtra(EditUserActivity.EXTRA_NAME_USER, user);
+//                startActivityForResult(intent, REQUEST_CODE_EDIT_USER);
+                update();
             }
         });
         mUserListRv.setHasFixedSize(true);
@@ -78,11 +88,12 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
         });
 
         //監聽資料更新
-        mFireStore.collection(userCollection).addSnapshotListener((value, error) -> {
+        mFireStore.collection("Users").addSnapshotListener((value, error) -> {
             if (value != null) {
                 for (DocumentChange document : value.getDocumentChanges()
                 ) {
                     User user = document.getDocument().toObject(User.class);
+
                     if (document.getType() == DocumentChange.Type.ADDED) {
                         Log.d(TAG, "有資料新增");
                         mUserList.add(user);
@@ -113,21 +124,36 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
     }
 
     private void addUser(User user) {
-        //新增User
-        //String id = UUID.randomUUID().toString();
-        mFireStore.collection(userCollection)
-                //將文件以userId命名，若沒有指定則由系統產生
-                .document(user.userId)
-                .set(user)
-                .addOnSuccessListener(aVoid -> Log.d(TAG, "新增成功"))
-                .addOnFailureListener(e -> Log.d(TAG, e.getMessage()));
+        //使用Object新增User
+//        mFireStore.collection("Users")
+//                //將文件以userId命名，若沒有指定則由系統產生
+//                .document(user.userId)
+//                .set(user)
+//                .addOnSuccessListener(aVoid -> Log.d(TAG, "新增成功"))
+//                .addOnFailureListener(e -> Log.d(TAG, e.getMessage()));
+
+        //使用HashMap新增User
+        String id = UUID.randomUUID().toString();
+        HashMap<String, Object> map = new HashMap<>();
+        map.put("userId", "user001");
+        map.put("userName", "Tony");
+        map.put("age", 15);
+
+        mFireStore.collection("Users")
+                .document()
+                .set(map);
+
+
+        //merge合併更新-新資料的所有欄位都會附加到舊資料上
+//        mFireStore.collection("Users")
+//                .document("user001")
+//                .set(map, SetOptions.merge());
     }
 
     private void getUsers() {
         //取得Users
         mUserList.clear();
-        mFireStore.collection(userCollection)
-                .whereEqualTo("userId", "user001")
+        mFireStore.collection("Users")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -135,12 +161,44 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
                         for (QueryDocumentSnapshot document : task.getResult()
                         ) {
                             mUserList.add(document.toObject(User.class));
-                            mAdapter.notifyDataSetChanged();
                         }
                     } else {
-                        Log.d(TAG, "取得Users失敗");
+                        Log.d(TAG, task.getException().toString());
                     }
+                    mAdapter.notifyDataSetChanged();
                 });
+    }
+
+    private void update() {
+        //更新特定欄位
+        mFireStore.collection("Users")
+                .document("user001")
+                .update("age", 11);
+
+        //更新多個欄位
+        mFireStore.collection("Users")
+                .document("user001")
+                .update("age", 66, "userName", "測試");
+
+        //更新多個document
+        //更新和刪除是資料庫常見的操作，其中Firestore只能針對整個文件或部分欄位
+        //與SQL不同的地方在於，只可針對單一文件操作，無法一口氣更新多筆符合條件的文件
+
+//        WriteBatch batch = mFireStore.batch();//批量寫入
+//        mFireStore.collection("Users")
+//                .whereLessThan("age", 26)
+//                .get()
+//                .addOnCompleteListener(task -> {
+//                    if (task.isSuccessful()) {
+//                        for (QueryDocumentSnapshot document : task.getResult()
+//                        ) {
+//                            User user = document.toObject(User.class);
+//                            DocumentReference ref = mFireStore.collection("Users").document(user.userId);
+//                            batch.update(ref,"age", 11);
+//                        }
+//                        batch.commit();
+//                    }
+//                });
     }
 
     private void delete(String userId) {
@@ -160,22 +218,6 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
         mFireStore.collection("Users")
                 .document(userId)
                 .update("age", FieldValue.delete());
-    }
-
-    private void update() {
-        //更新特定欄位
-        mFireStore.collection(userCollection)
-                .document("user001")
-                .update("age", 11);
-
-        //更新多個欄位
-        mFireStore.collection(userCollection)
-                .document("user001")
-                .update("age", 66, "userName", "測試");
-
-        //更新多個document
-        //更新和刪除是資料庫常見的操作，其中Firestore只能針對整個文件或部分欄位
-        //與SQL不同的地方在於，只可針對單一文件操作，無法一口氣更新多筆符合條件的文件
     }
 
     private void where() {
@@ -231,6 +273,24 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
                 });
     }
 
+    private void startAt() {
+        //撈取年齡25歲(包含)以後
+        mUserList.clear();
+        mFireStore.collection("Users")
+                .orderBy("age", Query.Direction.ASCENDING)
+                .startAt(25)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()
+                        ) {
+                            mUserList.add(document.toObject(User.class));
+                        }
+                    }
+                    mAdapter.notifyDataSetChanged();
+                });
+    }
+
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
@@ -239,12 +299,14 @@ public class CloudFireStoreDemo extends AppCompatActivity implements View.OnClic
                 Intent intent = new Intent(this, EditUserActivity.class);
                 startActivityForResult(intent, REQUEST_CODE_EDIT_USER);
 
+//                addUser(new User());
 //                update();
 //                delete();
 
 //                where();
 //                order();
 //                limit();
+//                startAt();
                 break;
         }
     }

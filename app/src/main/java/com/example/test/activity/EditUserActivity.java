@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -61,10 +62,12 @@ public class EditUserActivity extends AppCompatActivity implements View.OnClickL
         switch (v.getId()) {
             case R.id.sendBtn:
                 //新增User
+                String age = mAgeEt.getText().toString();
+
                 User user = new User();
                 user.userId = mUserIdEt.getText().toString();
                 user.userName = mUserNameEt.getText().toString();
-                user.age = Integer.valueOf(mAgeEt.getText().toString());
+                user.age = Integer.parseInt(TextUtils.isEmpty(age) ? "0" : age);
                 user.sex = mSexEt.getText().toString();
                 user.address = mAddressEt.getText().toString();
                 Intent intent = new Intent(this, CloudFireStoreDemo.class);

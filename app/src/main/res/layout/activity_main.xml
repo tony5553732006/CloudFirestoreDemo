@@ -11,6 +11,9 @@
         android:id="@+id/cloudFireStoreBtn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAllCaps="false"
+        android:textSize="16dp"
+        android:textColor="@android:color/black"
         android:text="Cloud FireStore Demo"/>
 
 </LinearLayout>

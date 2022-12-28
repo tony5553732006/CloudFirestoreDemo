@@ -2,6 +2,7 @@ package com.example.test.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 public class User implements Serializable {
     public String userId;
